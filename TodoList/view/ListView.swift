@@ -8,28 +8,46 @@
 import SwiftUI
 
 struct ListView: View {
-    @State var items:[String]=["Công việc 1","Công việc 2","Công việc 3"]
+    @EnvironmentObject var listViewModel : ListViewModel
+    
     var body: some View {
-        List{
-            ForEach(items, id: \.self){ item in
-                ListRowView(title: item)
+        ScrollView{
+            if listViewModel.items.isEmpty{
+                Text("Không có công việc nào 🎉🎉🎉")
+                    .font(.headline)
+                    .multilineTextAlignment(.center)
+            }else{
+                List{
+                    ForEach(listViewModel.items){item in
+                        ListRowView(item: item)
+                            .onTapGesture {
+                                withAnimation(.linear){
+                                    listViewModel.updateIsCompletedItem(item: item)
+                                }
+                            }
+                            .onTapGesture(count: 2) {
+                                withAnimation(.linear){
+                                    
+                                }
+                            }
+                    }
+                    .onDelete(perform: listViewModel.delete)
+                    .onMove(perform: listViewModel.move)
+                }
             }
-            .onDelete { indexSet in
-                delete(indexSet: indexSet)
-            }
-        } 
+        }
+        .padding()
         .navigationTitle("Todo List 📝")
+        .navigationBarItems(leading: EditButton(),trailing: NavigationLink("Add",destination: AddView()))
     }
-    func delete(indexSet:IndexSet){
-        items.remove(atOffsets: indexSet)
-    }
+    
 }
-
 
 struct ListView_Previews: PreviewProvider {
     static var previews: some View {
         NavigationView{
             ListView()
         }
+        .environmentObject(ListViewModel())
     }
 }
